@@ -20,7 +20,7 @@ const BikeCard = ({ bike }: BikeCardProps) => {
           className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
         />
         <div className="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-md text-sm font-medium">
-          ${bike.price}/day
+          ₹{bike.price}/day
         </div>
         <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs uppercase px-2 py-1 rounded-md">
           {bike.type}

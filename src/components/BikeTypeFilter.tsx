@@ -11,11 +11,11 @@ interface BikeTypeFilterProps {
 const BikeTypeFilter = ({ currentType, onTypeChange }: BikeTypeFilterProps) => {
   const types: Array<{ value: BikeType | 'all'; label: string }> = [
     { value: 'all', label: 'All Bikes' },
-    { value: 'city', label: 'City' },
-    { value: 'mountain', label: 'Mountain' },
-    { value: 'road', label: 'Road' },
-    { value: 'electric', label: 'Electric' },
-    { value: 'hybrid', label: 'Hybrid' },
+    { value: 'gear', label: 'Gear Bikes' },
+    { value: 'scooter', label: 'Scooters' },
+    { value: 'commuter', label: 'Commuter' },
+    { value: 'sports', label: 'Sports' },
+    { value: 'cruiser', label: 'Cruiser' },
   ];
 
   return (

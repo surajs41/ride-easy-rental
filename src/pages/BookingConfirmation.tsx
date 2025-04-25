@@ -1,0 +1,156 @@
+
+import React from 'react';
+import { useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Download, CheckCircle, CalendarRange, MapPin } from 'lucide-react';
+import { format } from 'date-fns';
+
+const BookingConfirmation = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const bookingData = location.state;
+  
+  if (!bookingData) {
+    return <Navigate to="/bikes" replace />;
+  }
+  
+  const { 
+    bike, 
+    startDate, 
+    endDate, 
+    startTime, 
+    endTime, 
+    pickupLocation, 
+    dropLocation, 
+    total,
+    bookingId
+  } = bookingData;
+  
+  const locationNames: Record<string, string> = {
+    'main-office': 'Main Office - Mumbai Central',
+    'andheri': 'Andheri Branch',
+    'thane': 'Thane Branch',
+    'bandra': 'Bandra Outlet'
+  };
+  
+  const handleDownloadInvoice = () => {
+    // In a real app, this would generate a PDF invoice
+    alert('This would download a PDF invoice in a real application');
+  };
+
+  return (
+    <div className="py-12">
+      <div className="container mx-auto px-4">
+        <div className="max-w-3xl mx-auto bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-green-500 text-white p-6 text-center">
+            <CheckCircle className="h-16 w-16 mx-auto mb-4" />
+            <h1 className="text-3xl font-bold">Booking Confirmed!</h1>
+            <p className="text-lg mt-2">Your bike has been successfully reserved</p>
+          </div>
+          
+          <div className="p-6">
+            <div className="border-b pb-4 mb-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Booking Details</h2>
+                <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">Booking ID: {bookingId}</span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="flex items-center mb-6">
+                  <img 
+                    src={bike.imageUrl} 
+                    alt={bike.name} 
+                    className="w-20 h-20 object-cover rounded-md mr-4" 
+                  />
+                  <div>
+                    <h3 className="font-semibold text-lg">{bike.name}</h3>
+                    <p className="text-gray-600 capitalize">{bike.type}</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <CalendarRange className="h-5 w-5 mt-0.5 mr-2 text-gray-500" />
+                    <div>
+                      <p className="font-medium">Rental Period</p>
+                      <p className="text-gray-600">From: {format(new Date(startDate), 'PPP')} at {startTime}</p>
+                      <p className="text-gray-600">To: {format(new Date(endDate), 'PPP')} at {endTime}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <MapPin className="h-5 w-5 mt-0.5 mr-2 text-gray-500" />
+                    <div>
+                      <p className="font-medium">Pickup Location</p>
+                      <p className="text-gray-600">{locationNames[pickupLocation]}</p>
+                      <p className="font-medium mt-2">Return Location</p>
+                      <p className="text-gray-600">{locationNames[dropLocation]}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold mb-4">Payment Summary</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Rental Charge</span>
+                    <span>₹{(total / 1.18).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>GST (18%)</span>
+                    <span>₹{(total - (total / 1.18)).toFixed(2)}</span>
+                  </div>
+                  <div className="border-t pt-2 mt-2 flex justify-between font-bold">
+                    <span>Total</span>
+                    <span>₹{total.toFixed(2)}</span>
+                  </div>
+                </div>
+                
+                <div className="mt-6">
+                  <Button
+                    onClick={handleDownloadInvoice}
+                    className="w-full flex items-center justify-center"
+                    variant="outline"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download Invoice
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-8 border-t pt-6">
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <Info className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-blue-700">
+                      Please arrive at the pickup location with a valid ID and driver's license. For any changes or queries,
+                      contact our customer service at <span className="font-medium">+91-9876543210</span>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-center">
+                <Button
+                  onClick={() => navigate('/bikes')}
+                  className="bg-brand-teal hover:bg-brand-teal/90"
+                >
+                  Browse More Bikes
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default BookingConfirmation;

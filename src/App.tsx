@@ -14,6 +14,8 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import BookBike from "./pages/BookBike";
+import BookingConfirmation from "./pages/BookingConfirmation";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,8 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/bikes" element={<Bikes />} />
                 <Route path="/bike/:id" element={<BikeDetail />} />
+                <Route path="/book/:id" element={<BookBike />} />
+                <Route path="/booking-confirmation" element={<BookingConfirmation />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />

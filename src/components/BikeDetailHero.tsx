@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Bike } from '@/data/bikes';
 import { Star, Calendar } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface BikeDetailHeroProps {
   bike: Bike;
@@ -56,7 +57,7 @@ const BikeDetailHero = ({ bike }: BikeDetailHeroProps) => {
             <div className="bg-gray-50 p-4 rounded-lg mb-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-lg font-semibold">${bike.price}</p>
+                  <p className="text-lg font-semibold">₹{bike.price}</p>
                   <p className="text-sm text-gray-500">per day</p>
                 </div>
                 <div className="flex items-center text-brand-teal">
@@ -66,13 +67,15 @@ const BikeDetailHero = ({ bike }: BikeDetailHeroProps) => {
               </div>
             </div>
             
-            <Button 
-              className="w-full bg-brand-teal hover:bg-brand-teal/90"
-              size="lg"
-              disabled={!bike.availability}
-            >
-              {bike.availability ? 'Book Now' : 'Not Available'}
-            </Button>
+            <Link to={`/book/${bike.id}`}>
+              <Button 
+                className="w-full bg-brand-teal hover:bg-brand-teal/90"
+                size="lg"
+                disabled={!bike.availability}
+              >
+                {bike.availability ? 'Book Now' : 'Not Available'}
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
