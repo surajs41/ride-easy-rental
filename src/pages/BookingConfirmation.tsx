@@ -27,10 +27,10 @@ const BookingConfirmation = () => {
   } = bookingData;
   
   const locationNames: Record<string, string> = {
-    'main-office': 'Main Office - Mumbai Central',
-    'andheri': 'Andheri Branch',
-    'thane': 'Thane Branch',
-    'bandra': 'Bandra Outlet'
+    'main-office': 'Main Office - Pune Central',
+    'andheri': 'Kothrud Branch - Pune',
+    'thane': 'Hinjewadi Branch - Pune',
+    'bandra': 'Koregaon Park Outlet - Pune'
   };
   
   const handleDownloadInvoice = () => {
@@ -131,7 +131,7 @@ const BookingConfirmation = () => {
                   <div className="ml-3">
                     <p className="text-sm text-blue-700">
                       Please arrive at the pickup location with a valid ID and driver's license. For any changes or queries,
-                      contact our customer service at <span className="font-medium">+91-9876543210</span>.
+                      contact our customer service at <span className="font-medium">+91-9356681781</span>.
                     </p>
                   </div>
                 </div>
