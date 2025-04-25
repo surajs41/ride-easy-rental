@@ -2,7 +2,7 @@
 import React from 'react';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Download, CheckCircle, CalendarRange, MapPin } from 'lucide-react';
+import { Download, CheckCircle, CalendarRange, MapPin, Info } from 'lucide-react';
 import { format } from 'date-fns';
 
 const BookingConfirmation = () => {
