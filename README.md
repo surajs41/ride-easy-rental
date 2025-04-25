@@ -1,5 +1,5 @@
-Welcome to your Project
-Project Info
+**Welcome to your Project**
+**Project Info**
 URL: [Your Project URL]
 
 How can I edit this code?
