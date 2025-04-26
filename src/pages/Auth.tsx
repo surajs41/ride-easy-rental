@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import AuthForm from '@/components/AuthForm';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
+  const [userType, setUserType] = useState<'user' | 'admin'>('user');
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
@@ -32,7 +34,17 @@ const Auth = () => {
             )}
           </p>
         </div>
-        <AuthForm mode={mode} />
+
+        {mode === 'login' && (
+          <Tabs defaultValue="user" className="w-full" onValueChange={(value) => setUserType(value as 'user' | 'admin')}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="user">User</TabsTrigger>
+              <TabsTrigger value="admin">Admin</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
+        
+        <AuthForm mode={mode} isAdmin={userType === 'admin'} />
       </div>
     </div>
   );

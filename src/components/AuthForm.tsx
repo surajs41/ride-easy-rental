@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 type AuthFormProps = {
   mode: 'login' | 'signup';
+  isAdmin?: boolean;
 };
 
 type FormData = {
@@ -20,13 +21,19 @@ type FormData = {
   phone?: string;
 };
 
-const AuthForm = ({ mode }: AuthFormProps) => {
+const AuthForm = ({ mode, isAdmin = false }: AuthFormProps) => {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
   const navigate = useNavigate();
 
   const onSubmit = async (data: FormData) => {
     try {
       if (mode === 'signup') {
+        // Admin signup is not allowed through the UI
+        if (isAdmin) {
+          toast.error("Admin accounts cannot be created through signup");
+          return;
+        }
+        
         const { error } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
@@ -41,6 +48,23 @@ const AuthForm = ({ mode }: AuthFormProps) => {
         if (error) throw error;
         toast.success("Successfully signed up! Please check your email for verification.");
       } else {
+        // Admin login validation
+        if (isAdmin && data.email === 'admin123@gmail.com' && data.password === 'Admin@123') {
+          const { error } = await supabase.auth.signInWithPassword({
+            email: data.email,
+            password: data.password,
+          });
+          if (error) throw error;
+          toast.success("Admin logged in successfully!");
+          navigate('/admin');
+          return;
+        } else if (isAdmin) {
+          // If admin login is attempted with wrong credentials
+          toast.error("Invalid admin credentials");
+          return;
+        }
+        
+        // Regular user login
         const { error } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
@@ -56,7 +80,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full max-w-md">
-      {mode === 'signup' && (
+      {mode === 'signup' && !isAdmin && (
         <>
           <div>
             <Label htmlFor="firstName">First Name</Label>
@@ -74,14 +98,24 @@ const AuthForm = ({ mode }: AuthFormProps) => {
       )}
       <div>
         <Label htmlFor="email">Email</Label>
-        <Input {...register("email", { required: true })} id="email" type="email" />
+        <Input 
+          {...register("email", { required: true })} 
+          id="email" 
+          type="email" 
+          defaultValue={isAdmin ? 'admin123@gmail.com' : ''}
+        />
       </div>
       <div>
         <Label htmlFor="password">Password</Label>
-        <Input {...register("password", { required: true })} id="password" type="password" />
+        <Input 
+          {...register("password", { required: true })} 
+          id="password" 
+          type="password" 
+          defaultValue={isAdmin ? 'Admin@123' : ''}
+        />
       </div>
       <Button type="submit" className="w-full bg-brand-teal hover:bg-brand-teal/90">
-        {mode === 'login' ? 'Log In' : 'Sign Up'}
+        {mode === 'login' ? (isAdmin ? 'Admin Login' : 'Log In') : 'Sign Up'}
       </Button>
     </form>
   );
