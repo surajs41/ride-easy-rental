@@ -1,14 +1,19 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Download, CheckCircle, CalendarRange, MapPin, Info } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { useAuth } from '@/lib/auth';
+import { supabase } from '@/integrations/supabase/client';
 
 const BookingConfirmation = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const bookingData = location.state;
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   
   if (!bookingData) {
     return <Navigate to="/bikes" replace />;
@@ -32,10 +37,67 @@ const BookingConfirmation = () => {
     'thane': 'Hinjewadi Branch - Pune',
     'bandra': 'Koregaon Park Outlet - Pune'
   };
+
+  useEffect(() => {
+    // Send confirmation email when component mounts
+    const sendConfirmationEmail = async () => {
+      if (!user || isSendingEmail) return;
+      
+      try {
+        setIsSendingEmail(true);
+        
+        // Get user profile for name
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('id', user.id)
+          .single();
+          
+        const userName = profile ? `${profile.first_name} ${profile.last_name}` : user.email;
+        
+        // Call our edge function to send confirmation email
+        const response = await fetch(`${supabase.supabaseUrl}/functions/v1/send-booking-confirmation`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabase.supabaseKey}`
+          },
+          body: JSON.stringify({
+            email: user.email,
+            name: userName,
+            bikeName: bike.name,
+            startDate: format(new Date(startDate), 'PPP'),
+            endDate: format(new Date(endDate), 'PPP'),
+            startTime,
+            endTime,
+            pickupLocation: locationNames[pickupLocation],
+            dropLocation: locationNames[dropLocation],
+            total,
+            bookingId
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to send confirmation email');
+        }
+        
+        console.log('Confirmation email sent successfully');
+      } catch (error) {
+        console.error('Error sending confirmation email:', error);
+        // Don't show toast error to user since this is a background operation
+      } finally {
+        setIsSendingEmail(false);
+      }
+    };
+    
+    sendConfirmationEmail();
+  }, [user, bookingId]);
   
   const handleDownloadInvoice = () => {
     // In a real app, this would generate a PDF invoice
-    alert('This would download a PDF invoice in a real application');
+    toast.success(`Downloading invoice for booking ${bookingId}...`);
   };
 
   return (

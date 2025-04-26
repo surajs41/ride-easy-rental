@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { format, addDays } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
@@ -8,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarIcon, Clock, Info } from 'lucide-react';
+import { CalendarIcon, Clock, Info, Plus, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getBikeById } from '@/data/bikes';
 import { useAuth } from '@/lib/auth';
@@ -30,16 +29,35 @@ const BookBike = () => {
   const [paymentMethod, setPaymentMethod] = useState<string>("pay-online");
   const [isTermsAccepted, setIsTermsAccepted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [rentalDays, setRentalDays] = useState<number>(1);
 
   // Calculate rental duration and cost
   const calculateDurationInDays = () => {
-    if (!startDate || !endDate) return 1;
+    if (!startDate || !endDate) return rentalDays;
     const oneDay = 24 * 60 * 60 * 1000;
-    return Math.ceil(Math.abs((endDate.getTime() - startDate.getTime()) / oneDay));
+    return Math.max(1, Math.ceil(Math.abs((endDate.getTime() - startDate.getTime()) / oneDay)));
+  };
+
+  // Update days when dates change
+  useEffect(() => {
+    setRentalDays(calculateDurationInDays());
+  }, [startDate, endDate]);
+
+  // Manual adjustment of rental days
+  const incrementDays = () => {
+    const newEndDate = addDays(endDate, 1);
+    setEndDate(newEndDate);
+  };
+
+  const decrementDays = () => {
+    if (rentalDays > 1) {
+      const newEndDate = addDays(endDate, -1);
+      setEndDate(newEndDate);
+    }
   };
 
   const calculateTotalCost = () => {
-    const days = calculateDurationInDays();
+    const days = rentalDays;
     const dailyRate = bike?.price || 0;
     const subtotal = days * dailyRate;
     const gst = subtotal * 0.18; // 18% GST
@@ -138,7 +156,15 @@ const BookBike = () => {
                         <Calendar
                           mode="single"
                           selected={startDate}
-                          onSelect={(date) => date && setStartDate(date)}
+                          onSelect={(date) => {
+                            if (date) {
+                              setStartDate(date);
+                              // If end date is before new start date, update it
+                              if (endDate < date) {
+                                setEndDate(addDays(date, 1));
+                              }
+                            }
+                          }}
                           disabled={(date) => date < new Date()}
                           initialFocus
                           className="rounded-md border"
@@ -210,9 +236,26 @@ const BookBike = () => {
               </div>
               
               <div className="mt-6">
-                <div className="flex justify-between items-center text-sm text-gray-600">
-                  <span>Rental Duration:</span>
-                  <span className="font-medium">{days} day{days !== 1 ? 's' : ''}</span>
+                <Label>Number of Days</Label>
+                <div className="flex items-center mt-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="icon"
+                    onClick={decrementDays}
+                    disabled={rentalDays <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="mx-4 font-medium text-lg min-w-[30px] text-center">{rentalDays}</span>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="icon"
+                    onClick={incrementDays}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </div>
@@ -262,8 +305,8 @@ const BookBike = () => {
               <h3 className="text-lg font-semibold mb-4">Payment Details</h3>
               <div className="space-y-4">
                 <div className="flex justify-between py-2 border-b">
-                  <span>Base Rental ({days} day{days !== 1 ? 's' : ''})</span>
-                  <span className="font-medium">₹{dailyRate} × {days} = ₹{subtotal}</span>
+                  <span>Base Rental ({rentalDays} day{rentalDays !== 1 ? 's' : ''})</span>
+                  <span className="font-medium">₹{dailyRate} × {rentalDays} = ₹{subtotal}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
                   <span>GST (18%)</span>

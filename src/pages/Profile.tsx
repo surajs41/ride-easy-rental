@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import { Download, User, Lock, Clock, Calendar, Star, CreditCard, Settings, LogO
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
+import ProfilePhotoUpload from '@/components/ProfilePhotoUpload';
 
 const MOCK_BOOKINGS = [
   {
@@ -38,16 +38,17 @@ const Profile = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('personal');
   const [isEditing, setIsEditing] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState('');
   
   // Form states
   const [formData, setFormData] = useState({
-    firstName: 'Rahul',
-    lastName: 'Sharma',
+    firstName: '',
+    lastName: '',
     email: user?.email || '',
-    phone: '+91-9876543210',
-    dob: '1990-05-15',
-    address: '123 MG Road, Koregaon Park, Pune, Maharashtra',
-    licenseNumber: 'MH12-20150123456',
+    phone: '',
+    dob: '',
+    address: '',
+    licenseNumber: '',
   });
   
   const [passwordData, setPasswordData] = useState({
@@ -60,8 +61,39 @@ const Profile = () => {
     if (!user) {
       toast.error('Please login to view your profile');
       navigate('/auth?mode=login');
+      return;
     }
-    // In a real implementation, we would fetch user profile data from Supabase here
+    
+    // Fetch user profile data from Supabase
+    const fetchUserProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+          
+        if (error) throw error;
+        
+        if (data) {
+          setFormData({
+            firstName: data.first_name || '',
+            lastName: data.last_name || '',
+            email: user.email || '',
+            phone: data.phone || '',
+            dob: data.date_of_birth || '',
+            address: data.address || '',
+            licenseNumber: data.license_number || '',
+          });
+          
+          setProfileImageUrl(data.avatar_url || '');
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+    
+    fetchUserProfile();
   }, [user, navigate]);
   
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,25 +106,48 @@ const Profile = () => {
     setPasswordData(prev => ({ ...prev, [name]: value }));
   };
   
-  const saveProfileChanges = () => {
-    // In a real app, this would update the user's profile in Supabase
-    toast.success('Profile updated successfully!');
-    setIsEditing(false);
+  const saveProfileChanges = async () => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          address: formData.address,
+        })
+        .eq('id', user!.id);
+        
+      if (error) throw error;
+      
+      toast.success('Profile updated successfully!');
+      setIsEditing(false);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update profile');
+    }
   };
   
-  const updatePassword = () => {
+  const updatePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error('New password and confirm password do not match');
       return;
     }
     
-    // In a real app, this would update the user's password in Supabase
-    toast.success('Password updated successfully!');
-    setPasswordData({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    });
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword,
+      });
+      
+      if (error) throw error;
+      
+      toast.success('Password updated successfully!');
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update password');
+    }
   };
   
   const handleLogout = async () => {
@@ -105,8 +160,20 @@ const Profile = () => {
     }
   };
   
+  const handleProfilePhotoUploaded = async (url: string) => {
+    try {
+      await supabase
+        .from('profiles')
+        .update({ avatar_url: url })
+        .eq('id', user!.id);
+        
+      setProfileImageUrl(url);
+    } catch (error: any) {
+      console.error('Error updating profile with new avatar URL:', error);
+    }
+  };
+  
   const downloadInvoice = (bookingId: string) => {
-    // In a real app, this would generate and download a PDF invoice
     toast.success(`Downloading invoice for booking ${bookingId}...`);
   };
 
@@ -119,7 +186,7 @@ const Profile = () => {
             <div className="bg-white rounded-lg shadow p-6 mb-6">
               <div className="flex flex-col items-center mb-6">
                 <Avatar className="h-24 w-24 mb-4">
-                  <AvatarImage src="/placeholder.svg" alt="Profile" />
+                  <AvatarImage src={profileImageUrl} alt="Profile" />
                   <AvatarFallback>{formData.firstName[0]}{formData.lastName[0]}</AvatarFallback>
                 </Avatar>
                 <h2 className="text-xl font-semibold">{formData.firstName} {formData.lastName}</h2>
@@ -213,6 +280,16 @@ const Profile = () => {
                     )}
                   </div>
                   
+                  <div className="mb-6">
+                    <ProfilePhotoUpload 
+                      userId={user?.id || ''} 
+                      firstName={formData.firstName} 
+                      lastName={formData.lastName} 
+                      existingAvatarUrl={profileImageUrl}
+                      onPhotoUploaded={handleProfilePhotoUploaded}
+                    />
+                  </div>
+                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <Label htmlFor="firstName">First Name</Label>
@@ -242,7 +319,7 @@ const Profile = () => {
                         type="email" 
                         value={formData.email} 
                         onChange={handleFormChange}
-                        disabled={!isEditing} 
+                        disabled={true} // Email can't be changed
                       />
                     </div>
                     <div>
@@ -286,19 +363,6 @@ const Profile = () => {
                         disabled={!isEditing} 
                       />
                     </div>
-                    
-                    {isEditing && (
-                      <div className="md:col-span-2">
-                        <Label htmlFor="profilePicture">Profile Picture</Label>
-                        <Input 
-                          id="profilePicture" 
-                          name="profilePicture" 
-                          type="file"
-                          accept="image/*"
-                          className="mt-1"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
