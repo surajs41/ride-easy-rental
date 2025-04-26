@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Download, User, Lock, Clock, Calendar, Star, CreditCard, Settings, LogOut } from 'lucide-react';
+import { User, Lock, Clock, Calendar, Star, CreditCard, Settings, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,15 +45,9 @@ const Profile = () => {
     lastName: '',
     email: user?.email || '',
     phone: '',
-    dob: '',
+    dateOfBirth: '',
     address: '',
     licenseNumber: '',
-  });
-  
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
   });
 
   useEffect(() => {
@@ -81,7 +74,7 @@ const Profile = () => {
             lastName: data.last_name || '',
             email: user.email || '',
             phone: data.phone || '',
-            dob: data.date_of_birth || '',
+            dateOfBirth: data.date_of_birth || '',
             address: data.address || '',
             licenseNumber: data.license_number || '',
           });
@@ -96,16 +89,6 @@ const Profile = () => {
     fetchUserProfile();
   }, [user, navigate]);
   
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-  
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setPasswordData(prev => ({ ...prev, [name]: value }));
-  };
-  
   const saveProfileChanges = async () => {
     try {
       const { error } = await supabase
@@ -114,6 +97,9 @@ const Profile = () => {
           first_name: formData.firstName,
           last_name: formData.lastName,
           address: formData.address,
+          date_of_birth: formData.dateOfBirth,
+          license_number: formData.licenseNumber,
+          phone: formData.phone,
         })
         .eq('id', user!.id);
         
@@ -125,7 +111,17 @@ const Profile = () => {
       toast.error(error.message || 'Failed to update profile');
     }
   };
-  
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({ ...prev, [name]: value }));
+  };
+
   const updatePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error('New password and confirm password do not match');
@@ -149,7 +145,7 @@ const Profile = () => {
       toast.error(error.message || 'Failed to update password');
     }
   };
-  
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -159,7 +155,7 @@ const Profile = () => {
       navigate('/');
     }
   };
-  
+
   const handleProfilePhotoUploaded = async (url: string) => {
     try {
       await supabase
@@ -172,7 +168,7 @@ const Profile = () => {
       console.error('Error updating profile with new avatar URL:', error);
     }
   };
-  
+
   const downloadInvoice = (bookingId: string) => {
     toast.success(`Downloading invoice for booking ${bookingId}...`);
   };
@@ -333,12 +329,12 @@ const Profile = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="dob">Date of Birth</Label>
+                      <Label htmlFor="dateOfBirth">Date of Birth</Label>
                       <Input 
-                        id="dob" 
-                        name="dob" 
+                        id="dateOfBirth" 
+                        name="dateOfBirth" 
                         type="date" 
-                        value={formData.dob} 
+                        value={formData.dateOfBirth} 
                         onChange={handleFormChange}
                         disabled={!isEditing} 
                       />

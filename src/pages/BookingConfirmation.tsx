@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -56,11 +55,11 @@ const BookingConfirmation = () => {
         const userName = profile ? `${profile.first_name} ${profile.last_name}` : user.email;
         
         // Call our edge function to send confirmation email
-        const response = await fetch(`${supabase.supabaseUrl}/functions/v1/send-booking-confirmation`, {
+        const response = await fetch(`https://psjwczdyybkzufkkggqj.supabase.co/functions/v1/send-booking-confirmation`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabase.supabaseKey}`
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBzandjemR5eWJrenVma2tnZ3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxMjg1MTgsImV4cCI6MjA2MDcwNDUxOH0.JUSDhRWe91UI3TtXauquGYRVo-1ROqI791ajC9FR94s`
           },
           body: JSON.stringify({
             email: user.email,
@@ -77,16 +76,13 @@ const BookingConfirmation = () => {
           })
         });
         
-        const result = await response.json();
-        
         if (!response.ok) {
-          throw new Error(result.error || 'Failed to send confirmation email');
+          throw new Error('Failed to send confirmation email');
         }
         
         console.log('Confirmation email sent successfully');
       } catch (error) {
         console.error('Error sending confirmation email:', error);
-        // Don't show toast error to user since this is a background operation
       } finally {
         setIsSendingEmail(false);
       }
