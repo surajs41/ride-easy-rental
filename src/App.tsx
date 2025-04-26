@@ -18,6 +18,7 @@ import BookBike from "./pages/BookBike";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import Profile from "./pages/Profile";
 
+// Create a new QueryClient instance outside the component
 const queryClient = new QueryClient();
 
 const App = () => (
