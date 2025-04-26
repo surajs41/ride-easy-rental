@@ -42,36 +42,38 @@ const AuthForm = ({ mode, isAdmin = false }: AuthFormProps) => {
               first_name: data.firstName,
               last_name: data.lastName,
               phone: data.phone,
+              role: 'user'
             },
           },
         });
         if (error) throw error;
         toast.success("Successfully signed up! Please check your email for verification.");
       } else {
-        // Admin login validation
-        if (isAdmin && data.email === 'admin123@gmail.com' && data.password === 'Admin@123') {
-          const { error } = await supabase.auth.signInWithPassword({
-            email: data.email,
-            password: data.password,
-          });
-          if (error) throw error;
-          toast.success("Admin logged in successfully!");
-          navigate('/admin');
-          return;
-        } else if (isAdmin) {
-          // If admin login is attempted with wrong credentials
-          toast.error("Invalid admin credentials");
-          return;
+        // For admin login
+        if (isAdmin) {
+          // First check if credentials match our admin values
+          if (data.email !== 'admin123@gmail.com' || data.password !== 'Admin@123') {
+            toast.error("Invalid admin credentials");
+            return;
+          }
         }
         
-        // Regular user login
-        const { error } = await supabase.auth.signInWithPassword({
+        // Regular login via Supabase for both admin and users
+        const { error, data: authData } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
+        
         if (error) throw error;
-        toast.success("Successfully logged in!");
-        navigate('/');
+        
+        // Check if the user should be redirected to admin dashboard
+        if (isAdmin && data.email === 'admin123@gmail.com') {
+          toast.success("Admin logged in successfully!");
+          navigate('/admin');
+        } else {
+          toast.success("Successfully logged in!");
+          navigate('/');
+        }
       }
     } catch (error: any) {
       toast.error(error.message);
