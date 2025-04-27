@@ -66,7 +66,7 @@ const BookingConfirmation = () => {
           p_drop_location: dropLocation,
           p_total_amount: total,
           p_status: 'confirmed'
-        });
+        } as any);
           
         if (bookingError) {
           throw bookingError;
