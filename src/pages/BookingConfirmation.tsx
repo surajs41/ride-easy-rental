@@ -53,22 +53,20 @@ const BookingConfirmation = () => {
           
         const userName = profile ? `${profile.first_name} ${profile.last_name}` : user.email;
         
-        const { error: bookingError } = await supabase
-          .from('bookings')
-          .insert({
-            id: bookingId,
-            user_id: user.id,
-            bike_id: bike.id,
-            bike_name: bike.name,
-            start_date: startDate,
-            end_date: endDate,
-            start_time: startTime,
-            end_time: endTime,
-            pickup_location: pickupLocation,
-            drop_location: dropLocation,
-            total_amount: total,
-            status: 'confirmed'
-          });
+        const { error: bookingError } = await supabase.rpc('insert_booking', {
+          p_id: bookingId,
+          p_user_id: user.id,
+          p_bike_id: bike.id,
+          p_bike_name: bike.name,
+          p_start_date: startDate,
+          p_end_date: endDate,
+          p_start_time: startTime,
+          p_end_time: endTime,
+          p_pickup_location: pickupLocation,
+          p_drop_location: dropLocation,
+          p_total_amount: total,
+          p_status: 'confirmed'
+        });
           
         if (bookingError) {
           throw bookingError;

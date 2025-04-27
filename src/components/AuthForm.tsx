@@ -153,6 +153,7 @@ const AuthForm = ({ mode, isAdmin = false }: AuthFormProps) => {
                 inputClass="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-brand-teal focus:border-brand-teal"
                 buttonClass="border border-gray-300 rounded-l-md bg-white hover:bg-gray-50"
                 dropdownClass="bg-white"
+                // Removed the 'required' prop which is causing the error
               />
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
             </div>
