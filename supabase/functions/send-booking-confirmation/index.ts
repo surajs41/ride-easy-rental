@@ -32,37 +32,67 @@ const handler = async (req: Request): Promise<Response> => {
     const FORMSPREE_ID = Deno.env.get("FORMSPREE_ID") || "mqaprnqz";
     const requestData: BookingConfirmationRequest = await req.json();
     
-    // Format the booking details for the email
+    // Send directly to user's email instead of using formspree as a middleman
     const formData = new FormData();
     formData.append("email", requestData.email);
     formData.append("name", requestData.name);
     formData.append("_subject", `RideEasy Booking Confirmation #${requestData.bookingId}`);
     
-    // Create HTML email content
+    // Create HTML email content with proper styling
     const emailContent = `
-      <h1>Booking Confirmation</h1>
-      <p>Hello ${requestData.name},</p>
-      <p>Your bike rental booking has been confirmed! Here are the details:</p>
-      
-      <h2>Booking Details</h2>
-      <p><strong>Booking ID:</strong> ${requestData.bookingId}</p>
-      <p><strong>Bike:</strong> ${requestData.bikeName}</p>
-      
-      <h2>Rental Period</h2>
-      <p><strong>From:</strong> ${requestData.startDate} at ${requestData.startTime}</p>
-      <p><strong>To:</strong> ${requestData.endDate} at ${requestData.endTime}</p>
-      
-      <h2>Locations</h2>
-      <p><strong>Pickup Location:</strong> ${requestData.pickupLocation}</p>
-      <p><strong>Return Location:</strong> ${requestData.dropLocation}</p>
-      
-      <h2>Payment</h2>
-      <p><strong>Total Amount:</strong> ₹${requestData.total.toFixed(2)}</p>
-      
-      <p>Please arrive at the pickup location with your driver's license and a valid ID.</p>
-      <p>For any changes or questions, please contact our customer service.</p>
-      
-      <p>Thank you for choosing RideEasy!</p>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Booking Confirmation</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+          h1 { color: #2B8A8A; margin-top: 0; }
+          h2 { color: #2B8A8A; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-top: 20px; }
+          .header { background-color: #2B8A8A; color: white; padding: 20px; text-align: center; border-radius: 5px; }
+          .content { padding: 20px 0; }
+          .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+          .footer { background-color: #f8f8f8; padding: 15px; border-radius: 5px; font-size: 12px; text-align: center; margin-top: 20px; }
+          .important-note { background-color: #f0f8ff; border-left: 4px solid #2B8A8A; padding: 10px; margin: 15px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Booking Confirmation</h1>
+        </div>
+        
+        <div class="content">
+          <p>Hello ${requestData.name},</p>
+          <p>Your bike rental booking has been confirmed! Here are the details:</p>
+          
+          <h2>Booking Details</h2>
+          <p><strong>Booking ID:</strong> ${requestData.bookingId}</p>
+          <p><strong>Bike:</strong> ${requestData.bikeName}</p>
+          
+          <h2>Rental Period</h2>
+          <p><strong>From:</strong> ${requestData.startDate} at ${requestData.startTime}</p>
+          <p><strong>To:</strong> ${requestData.endDate} at ${requestData.endTime}</p>
+          
+          <h2>Locations</h2>
+          <p><strong>Pickup Location:</strong> ${requestData.pickupLocation}</p>
+          <p><strong>Return Location:</strong> ${requestData.dropLocation}</p>
+          
+          <h2>Payment</h2>
+          <p><strong>Total Amount:</strong> ₹${requestData.total.toFixed(2)}</p>
+          
+          <div class="important-note">
+            <p><strong>Important:</strong> Please arrive at the pickup location with your driver's license and a valid ID.</p>
+            <p>For any changes or questions, please contact our customer service at +91-9356681781.</p>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Thank you for choosing RideEasy!</p>
+          <p>© 2025 RideEasy. All rights reserved.</p>
+        </div>
+      </body>
+      </html>
     `;
     
     formData.append("message", emailContent);

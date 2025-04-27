@@ -13,6 +13,7 @@ const BookingConfirmation = () => {
   const { user } = useAuth();
   const bookingData = location.state;
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isStoringBooking, setIsStoringBooking] = useState(false);
   
   if (!bookingData) {
     return <Navigate to="/bikes" replace />;
@@ -38,12 +39,13 @@ const BookingConfirmation = () => {
   };
 
   useEffect(() => {
-    // Send confirmation email when component mounts
-    const sendConfirmationEmail = async () => {
-      if (!user || isSendingEmail) return;
+    // Store booking in Supabase and send confirmation email when component mounts
+    const storeBookingAndSendEmail = async () => {
+      if (!user || isSendingEmail || isStoringBooking) return;
       
       try {
-        setIsSendingEmail(true);
+        // First store booking in database
+        setIsStoringBooking(true);
         
         // Get user profile for name
         const { data: profile } = await supabase
@@ -53,6 +55,32 @@ const BookingConfirmation = () => {
           .single();
           
         const userName = profile ? `${profile.first_name} ${profile.last_name}` : user.email;
+        
+        // Store booking in bookings table
+        const { error: bookingError } = await supabase
+          .from('bookings')
+          .insert({
+            id: bookingId,
+            user_id: user.id,
+            bike_id: bike.id,
+            bike_name: bike.name,
+            start_date: startDate,
+            end_date: endDate,
+            start_time: startTime,
+            end_time: endTime,
+            pickup_location: pickupLocation,
+            drop_location: dropLocation,
+            total_amount: total,
+            status: 'confirmed'
+          });
+          
+        if (bookingError) {
+          throw bookingError;
+        }
+        
+        // Then send email confirmation
+        setIsStoringBooking(false);
+        setIsSendingEmail(true);
         
         // Call our edge function to send confirmation email
         const response = await fetch(`https://psjwczdyybkzufkkggqj.supabase.co/functions/v1/send-booking-confirmation`, {
@@ -82,13 +110,15 @@ const BookingConfirmation = () => {
         
         console.log('Confirmation email sent successfully');
       } catch (error) {
-        console.error('Error sending confirmation email:', error);
+        console.error('Error in booking confirmation process:', error);
+        toast.error('There was an issue processing your booking. Please contact support.');
       } finally {
         setIsSendingEmail(false);
+        setIsStoringBooking(false);
       }
     };
     
-    sendConfirmationEmail();
+    storeBookingAndSendEmail();
   }, [user, bookingId]);
   
   const handleDownloadInvoice = () => {

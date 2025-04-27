@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, Search, User } from 'lucide-react';
@@ -20,6 +20,30 @@ const Navbar = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileData, setProfileData] = useState<{ avatar_url?: string, first_name?: string, last_name?: string }>({});
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('avatar_url, first_name, last_name')
+          .eq('id', user.id)
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setProfileData(data);
+        }
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    };
+
+    fetchProfileData();
+  }, [user]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -29,6 +53,16 @@ const Navbar = () => {
       toast.success('Logged out successfully');
       navigate('/');
     }
+  };
+
+  // Get avatar initials from name or email
+  const getInitials = () => {
+    if (profileData.first_name && profileData.last_name) {
+      return `${profileData.first_name[0]}${profileData.last_name[0]}`;
+    } else if (user?.email) {
+      return user.email[0].toUpperCase();
+    }
+    return 'U';
   };
 
   return (
@@ -67,8 +101,8 @@ const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="rounded-full h-8 w-8 p-0">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder.svg" alt={user.email || ''} />
-                      <AvatarFallback>{user.email ? user.email[0].toUpperCase() : 'U'}</AvatarFallback>
+                      <AvatarImage src={profileData.avatar_url || ""} alt={user.email || ''} />
+                      <AvatarFallback>{getInitials()}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
