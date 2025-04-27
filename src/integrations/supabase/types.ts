@@ -27,6 +27,60 @@ export type Database = {
         }
         Relationships: []
       }
+      bookings: {
+        Row: {
+          bike_id: string
+          bike_name: string
+          created_at: string
+          drop_location: string
+          end_date: string
+          end_time: string
+          feedback: string | null
+          id: string
+          pickup_location: string
+          rating: number | null
+          start_date: string
+          start_time: string
+          status: string
+          total_amount: number
+          user_id: string
+        }
+        Insert: {
+          bike_id: string
+          bike_name: string
+          created_at?: string
+          drop_location: string
+          end_date: string
+          end_time: string
+          feedback?: string | null
+          id: string
+          pickup_location: string
+          rating?: number | null
+          start_date: string
+          start_time: string
+          status: string
+          total_amount: number
+          user_id: string
+        }
+        Update: {
+          bike_id?: string
+          bike_name?: string
+          created_at?: string
+          drop_location?: string
+          end_date?: string
+          end_time?: string
+          feedback?: string | null
+          id?: string
+          pickup_location?: string
+          rating?: number | null
+          start_date?: string
+          start_time?: string
+          status?: string
+          total_amount?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null

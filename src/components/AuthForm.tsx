@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
@@ -79,12 +78,11 @@ const AuthForm = ({ mode, isAdmin = false }: AuthFormProps) => {
       } else {
         // For admin login
         if (isAdmin) {
-          // First, check if credentials match our admin values
           const { data: adminData, error: adminError } = await supabase
             .from('admins')
             .select('*')
-            .eq('email', data.email)
-            .eq('password', data.password)
+            .eq('email', 'admin@bike.com')
+            .eq('password', 'Admin@123')
             .single();
 
           if (adminError || !adminData) {
@@ -94,7 +92,7 @@ const AuthForm = ({ mode, isAdmin = false }: AuthFormProps) => {
         }
         
         // Regular login via Supabase for both admin and users
-        const { error, data: authData } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
@@ -155,7 +153,6 @@ const AuthForm = ({ mode, isAdmin = false }: AuthFormProps) => {
                 inputClass="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-brand-teal focus:border-brand-teal"
                 buttonClass="border border-gray-300 rounded-l-md bg-white hover:bg-gray-50"
                 dropdownClass="bg-white"
-                required
               />
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
             </div>
@@ -219,11 +216,7 @@ const AuthForm = ({ mode, isAdmin = false }: AuthFormProps) => {
         <Input 
           {...register("password", { 
             required: true,
-            minLength: { value: 8, message: "Password must be at least 8 characters" },
-            pattern: {
-              value: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
-              message: "Password must contain at least one letter, one number, and one special character"
-            }
+            minLength: { value: 8, message: "Password must be at least 8 characters" }
           })} 
           id="password" 
           type="password" 

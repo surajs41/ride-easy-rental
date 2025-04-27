@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -55,7 +54,6 @@ const Navbar = () => {
     }
   };
 
-  // Get avatar initials from name or email
   const getInitials = () => {
     if (profileData.first_name && profileData.last_name) {
       return `${profileData.first_name[0]}${profileData.last_name[0]}`;
@@ -145,7 +143,6 @@ const Navbar = () => {
           </div>
         </div>
         
-        {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden mt-3 pt-3 border-t">
             <div className="flex flex-col space-y-3">

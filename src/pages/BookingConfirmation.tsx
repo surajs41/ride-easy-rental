@@ -39,15 +39,12 @@ const BookingConfirmation = () => {
   };
 
   useEffect(() => {
-    // Store booking in Supabase and send confirmation email when component mounts
     const storeBookingAndSendEmail = async () => {
       if (!user || isSendingEmail || isStoringBooking) return;
       
       try {
-        // First store booking in database
         setIsStoringBooking(true);
         
-        // Get user profile for name
         const { data: profile } = await supabase
           .from('profiles')
           .select('first_name, last_name')
@@ -56,7 +53,6 @@ const BookingConfirmation = () => {
           
         const userName = profile ? `${profile.first_name} ${profile.last_name}` : user.email;
         
-        // Store booking in bookings table
         const { error: bookingError } = await supabase
           .from('bookings')
           .insert({
@@ -78,11 +74,9 @@ const BookingConfirmation = () => {
           throw bookingError;
         }
         
-        // Then send email confirmation
         setIsStoringBooking(false);
         setIsSendingEmail(true);
         
-        // Call our edge function to send confirmation email
         const response = await fetch(`https://psjwczdyybkzufkkggqj.supabase.co/functions/v1/send-booking-confirmation`, {
           method: 'POST',
           headers: {
@@ -122,7 +116,6 @@ const BookingConfirmation = () => {
   }, [user, bookingId]);
   
   const handleDownloadInvoice = () => {
-    // In a real app, this would generate a PDF invoice
     toast.success(`Downloading invoice for booking ${bookingId}...`);
   };
 
